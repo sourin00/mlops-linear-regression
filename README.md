@@ -168,13 +168,13 @@ cd src
 python train.py
 ```
 
-**Expected Output:**
+**Output:**
 ```
 Loading California Housing dataset...
 Creating LinearRegression model...
 Training model...
-R² Score: 0.6002
-Mean Squared Error (Loss): 0.5558
+R² Score: 0.5758
+Mean Squared Error (Loss): 0.5559
 Model saved to models/linear_regression_model.joblib
 ```
 
@@ -184,19 +184,35 @@ Model saved to models/linear_regression_model.joblib
 python quantize.py
 ```
 
-**Expected Output:**
+**Output:**
 ```
 Loading trained model...
 Original coefficients shape: (8,)
-Original intercept: 2.0686
-Raw parameters saved to models/unquant_params.joblib
-Quantized parameters saved to models/quant_params.joblib
+Original intercept: -37.02327770606389
+Original coef values: [ 4.48674910e-01  9.72425752e-03 -1.23323343e-01  7.83144907e-01
+ -2.02962058e-06 -3.52631849e-03 -4.19792487e-01 -4.33708065e-01]
 
-Quantization Results:
-Original coef range: [-0.887952, 1.234567]
-Dequantized coef range: [-0.887898, 1.234521]
-Original intercept: 2.068600
-Dequantized intercept: 2.068543
+Quantizing intercept...
+Intercept value: -37.02327771
+Intercept scale factor: 5.40
+Quantized parameters saved to models/quant_params.joblib
+Max coefficient error: 0.00000002
+Intercept error: 0.00000042
+
+Inference Test (first 5 samples):
+Original predictions (sklearn): [0.71912284 1.76401657 2.70965883 2.83892593 2.60465725]
+Manual original predictions:    [0.71912284 1.76401657 2.70965883 2.83892593 2.60465725]
+Manual dequant predictions:     [0.71912454 1.76401826 2.70966059 2.83892763 2.60465899]
+
+Differences:
+Sklearn vs manual original: [0. 0. 0. 0. 0.]
+Original vs dequant manual:  [1.69724930e-06 1.69119023e-06 1.75485832e-06 1.70069523e-06
+ 1.73872417e-06]
+Absolute differences: [1.69724930e-06 1.69119023e-06 1.75485832e-06 1.70069523e-06
+ 1.73872417e-06]
+Max difference: 1.7548583173265797e-06
+Mean difference: 1.7165434499588629e-06
+Quantization quality is good (max diff: 0.000002)
 ```
 
 ### Making Predictions
@@ -250,13 +266,21 @@ Loading trained model...
 Loading test dataset...
 Making predictions...
 Model Performance:
-R² Score: 0.6002
-Mean Squared Error: 0.5558
+R² Score: 0.5758
+Mean Squared Error: 0.5559
 
 Sample Predictions (first 10):
-True: 4.53 | Predicted: 4.18 | Diff: 0.35
-True: 3.42 | Predicted: 3.68 | Diff: 0.26
-...
+True: 0.48 | Predicted: 0.72 | Diff: 0.24
+True: 0.46 | Predicted: 1.76 | Diff: 1.31
+True: 5.00 | Predicted: 2.71 | Diff: 2.29
+True: 2.19 | Predicted: 2.84 | Diff: 0.65
+True: 2.78 | Predicted: 2.60 | Diff: 0.18
+True: 1.59 | Predicted: 2.01 | Diff: 0.42
+True: 1.98 | Predicted: 2.65 | Diff: 0.66
+True: 1.57 | Predicted: 2.17 | Diff: 0.59
+True: 3.40 | Predicted: 2.74 | Diff: 0.66
+True: 4.47 | Predicted: 3.92 | Diff: 0.55
+
 Prediction completed successfully!
 ```
 

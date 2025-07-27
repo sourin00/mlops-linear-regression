@@ -1,8 +1,8 @@
-import pytest
-import numpy as np
 import os
 import sys
-import joblib
+
+import numpy as np
+import pytest
 from sklearn.linear_model import LinearRegression
 
 # Add src to path
@@ -45,7 +45,7 @@ class TestTraining:
         assert hasattr(model, 'predict')
 
     def test_model_training(self):
-        """Test if model can be trained and has required attributes."""
+        """Test if the model can be trained and has required attributes."""
         X_train, X_test, y_train, y_test = load_dataset()
         model = create_model()
 
