@@ -24,7 +24,10 @@ def create_model():
 
 def save_model(model, filepath):
     """Save model using joblib."""
-    os.makedirs(os.path.dirname(filepath), exist_ok=True)
+    # Only create directory if filepath contains a directory
+    directory = os.path.dirname(filepath)
+    if directory:  # Only create directory if it's not empty
+        os.makedirs(directory, exist_ok=True)
     joblib.dump(model, filepath)
 
 
