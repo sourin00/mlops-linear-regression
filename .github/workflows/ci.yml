@@ -48,6 +48,10 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
+    - name: Create models directory
+      run: |
+        mkdir -p models
+
     - name: Train model
       run: |
         cd src
@@ -58,13 +62,23 @@ jobs:
         cd src
         python quantize.py
 
+    - name: Verify artifacts exist
+      run: |
+        echo "Contents of models directory:"
+        ls -la models/
+        echo "Current working directory:"
+        pwd
+        echo "All files in current directory:"
+        find . -name "*.joblib" -type f
+
     - name: Upload model artifacts
       uses: actions/upload-artifact@v4
       with:
         name: model-artifacts
         path: |
-          models/
+          models/*.joblib
         retention-days: 30
+        if-no-files-found: error
 
   build_and_test_container:
     runs-on: ubuntu-latest
@@ -85,11 +99,24 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
+    - name: Create models directory
+      run: |
+        mkdir -p models
+
     - name: Download model artifacts
       uses: actions/download-artifact@v4
       with:
         name: model-artifacts
         path: models/
+
+    - name: Verify downloaded artifacts
+      run: |
+        echo "Downloaded artifacts:"
+        ls -la models/
+        echo "Checking for required model files:"
+        test -f models/linear_regression_model.joblib && echo "Main model found" || echo "Main model missing"
+        test -f models/unquant_params.joblib && echo "Unquant params found" || echo "Unquant params missing"
+        test -f models/quant_params.joblib && echo "Quant params found" || echo "Quant params missing"
 
     - name: Build Docker image
       run: |
