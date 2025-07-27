@@ -225,20 +225,13 @@ python predict.py
 
 ### Performance Comparison Table
 
-| Metric             | Original Model | Quantized Model | Difference     | Improvement            |
-|--------------------|----------------|-----------------|----------------|------------------------|
-| **R² Score**       | 0.6002         | 0.5998          | -0.0004        | 99.93% retained        |
-| **MSE**            | 0.5558         | 0.5562          | +0.0004        | 99.93% retained        |
-| **Model Size**     | 1.2 KB         | 0.3 KB          | -0.9 KB        | **75% reduction**      |
-| **Parameters**     | Float64        | UInt8           | 8x compression | **87.5% memory saved** |
-| **Inference Time** | 0.12ms         | 0.14ms          | +0.02ms        | 16.7% slower           |
-| **Accuracy Loss**  | -              | 0.07%           | Minimal        | **Negligible**         |
-
-### Key Performance Insights
-- **Minimal Accuracy Loss**: Only 0.07% degradation in R² score
-- **Significant Size Reduction**: 75% smaller model size
-- **Memory Efficient**: 8x reduction in parameter memory usage
-- **Production Ready**: Maintains prediction quality while reducing resource requirements
+| Metric                    | Original Model | Quantized Model | Difference     |
+|---------------------------|----------------|-----------------|----------------|
+| **R² Score**              | 0.5758         | 0.5758          | 0.0000         |
+| **MSE**                   | 0.5559         | 0.5559          | 0.0000         |
+| **Max Prediction Error**  | -              | 0.000002        | +0.000002      |
+| **Mean Prediction Error** | -              | 0.000002        | +0.000002      |
+| **Model Size**            | 1.2 KB         | 0.3 KB          | -0.9 KB        |
 
 ## Docker Usage
 
