@@ -2,7 +2,7 @@ import numpy as np
 import joblib
 import os
 
-from src.utils import load_model
+from utils import quantize_to_uint16, dequantize_from_uint16, load_model
 
 
 def main():
@@ -26,8 +26,6 @@ def main():
     os.makedirs("models", exist_ok=True)
     joblib.dump(raw_params, "models/unquant_params.joblib")
 
-    # --- Use uint16 quantization for better quality ---
-    from utils import quantize_to_uint16, dequantize_from_uint16
     quant_coef16, coef16_min, coef16_max, coef16_scale = quantize_to_uint16(coef)
     quant_intercept16, int16_min, int16_max, int16_scale = quantize_to_uint16(np.array([intercept]))
 
