@@ -20,7 +20,7 @@ This project implements a complete MLOps pipeline for Linear Regression using th
 
 - **Model Training**: Linear Regression using scikit-learn
 - **Testing**: Comprehensive unit tests with pytest
-- **Quantization**: Manual 8-bit quantization for model compression
+- **Quantization**: Manual 16-bit quantization (uint16) for model compression
 - **Containerization**: Docker support for deployment
 - **CI/CD**: Automated GitHub Actions workflow
 - **Monitoring**: Performance tracking and comparison
@@ -175,6 +175,8 @@ Creating LinearRegression model...
 Training model...
 R² Score: 0.5758
 Mean Squared Error (Loss): 0.5559
+Max Prediction Error: 9.8753
+Mean Prediction Error: 0.5332
 Model saved to models/linear_regression_model.joblib
 ```
 
@@ -194,25 +196,29 @@ Original coef values: [ 4.48674910e-01  9.72425752e-03 -1.23323343e-01  7.831449
 
 Quantizing intercept...
 Intercept value: -37.02327771
-Intercept scale factor: 5.40
+Intercept scale factor: 1769.16
 Quantized parameters saved to models/quant_params.joblib
-Max coefficient error: 0.00000002
-Intercept error: 0.00000042
+
+Model size before quantization: 0.65 KB
+Model size after quantization:  0.55 KB
+Size reduction:                0.10 KB
+Max coefficient error: 0.00001722
+Intercept error: 0.00000000
 
 Inference Test (first 5 samples):
 Original predictions (sklearn): [0.71912284 1.76401657 2.70965883 2.83892593 2.60465725]
 Manual original predictions:    [0.71912284 1.76401657 2.70965883 2.83892593 2.60465725]
-Manual dequant predictions:     [0.71912454 1.76401826 2.70966059 2.83892763 2.60465899]
+Manual dequant predictions:     [0.69951698 1.74201847 2.69089815 2.81510208 2.5894276 ]
 
 Differences:
 Sklearn vs manual original: [0. 0. 0. 0. 0.]
-Original vs dequant manual:  [1.69724930e-06 1.69119023e-06 1.75485832e-06 1.70069523e-06
- 1.73872417e-06]
-Absolute differences: [1.69724930e-06 1.69119023e-06 1.75485832e-06 1.70069523e-06
- 1.73872417e-06]
-Max difference: 1.7548583173265797e-06
-Mean difference: 1.7165434499588629e-06
-Quantization quality is good (max diff: 0.000002)
+Original vs dequant manual:  [0.01960586 0.0219981  0.01876068 0.02382385 0.01522965]
+Absolute differences: [0.01960586 0.0219981  0.01876068 0.02382385 0.01522965]
+Max difference: 0.02382384825320827
+Mean difference: 0.01988362812321611
+Quantization quality is good (max diff: 0.023824)
+Max Prediction Error (quantized): 9.8738
+Mean Prediction Error (quantized): 0.5305
 ```
 
 ### Making Predictions
@@ -225,13 +231,13 @@ python predict.py
 
 ### Performance Comparison Table
 
-| Metric                    | Original Model | Quantized Model | Difference     |
-|---------------------------|----------------|-----------------|----------------|
-| **R² Score**              | 0.5758         | 0.5758          | 0.0000         |
-| **MSE**                   | 0.5559         | 0.5559          | 0.0000         |
-| **Max Prediction Error**  | -              | 0.000002        | +0.000002      |
-| **Mean Prediction Error** | -              | 0.000002        | +0.000002      |
-| **Model Size**            | 1.2 KB         | 0.3 KB          | -0.9 KB        |
+| Metric                    | Original Model | Quantized Model (uint16) | Difference     |
+|---------------------------|----------------|--------------------------|----------------|
+| **R² Score**              | 0.5758         | 0.5752                   | -0.0006        |
+| **MSE**                   | 0.5559         | 0.5567                   | +0.0008        |
+| **Max Prediction Error**  | 9.8753         | 9.8738                   | -0.0015        |
+| **Mean Prediction Error** | 0.5332         | 0.5305                   | -0.0027        |
+| **Model Size**            | 0.65 KB        | 0.55 KB                  | -0.10 KB       |
 
 ## Docker Usage
 
@@ -347,13 +353,13 @@ tests/test_train.py::TestTraining::test_model_save_load PASSED
 
 ## Quantization Details
 
-### Manual 8-bit Quantization Process
+### Manual 16-bit Quantization Process
 
 Our custom quantization implementation:
 
 1. **Parameter Extraction**: Extract `coef_` and `intercept_` from trained model
-2. **Scaling**: Apply scale factor to fit float range into uint8
-3. **Normalization**: Map values to 0-255 range
+2. **Scaling**: Apply scale factor to fit float range into uint16
+3. **Normalization**: Map values to 0-65535 range
 4. **Storage**: Save quantized parameters with metadata
 5. **Dequantization**: Reverse process for inference
 
@@ -361,10 +367,10 @@ Our custom quantization implementation:
 ```python
 # Quantization
 scaled_values = values * scale_factor
-normalized = ((values - min_val) / (max_val - min_val)) * 255
-quantized = normalized.astype(np.uint8)
+normalized = ((scaled_values - min_val) / (max_val - min_val)) * 65535
+quantized = normalized.astype(np.uint16)
 
 # Dequantization  
-denormalized = (quantized / 255.0) * (max_val - min_val) + min_val
+denormalized = (quantized / 65535.0) * (max_val - min_val) + min_val
 original = denormalized / scale_factor
 ```
