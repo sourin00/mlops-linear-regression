@@ -202,8 +202,8 @@ Quantized parameters saved to models/quant_params.joblib
 Model size before quantization: 0.65 KB
 Model size after quantization:  0.55 KB
 Size reduction:                0.10 KB
-Max coefficient error: 0.00001722
-Intercept error: 0.00000000
+Max coefficient error (16-bit): 0.00001722
+Intercept error (16-bit): 0.00000000
 
 Inference Test (first 5 samples):
 Original predictions (sklearn): [0.71912284 1.76401657 2.70965883 2.83892593 2.60465725]
@@ -217,8 +217,32 @@ Absolute differences: [0.01960586 0.0219981  0.01876068 0.02382385 0.01522965]
 Max difference: 0.02382384825320827
 Mean difference: 0.01988362812321611
 Quantization quality is good (max diff: 0.023824)
-Max Prediction Error (quantized): 9.8738
-Mean Prediction Error (quantized): 0.5305
+Max Prediction Error (quantized 16-bit): 9.8738
+Mean Prediction Error (quantized 16-bit): 0.5305
+
+Quantizing intercept (8-bit)...
+Intercept value: -37.02327771
+Intercept scale factor (8-bit): 6.75
+Quantized parameters (8-bit) saved to models/quant_params8.joblib
+Model size after 8-bit quantization:  0.53 KB
+Size reduction (8-bit):                0.12 KB
+Max coefficient error (8-bit): 0.00441088
+Intercept error (8-bit): 0.00000000
+
+Manual dequant predictions (8-bit):      [-5.4457549  -5.1534455  -3.24117255 -4.62411163 -2.21934695]
+Absolute differences (8-bit): [6.16487775 6.91746207 5.95083138 7.46303756 4.8240042 ]
+Max difference (8-bit): 7.463037557632468
+Mean difference (8-bit): 6.26404259166095
+Quantization quality (8-bit) is poor (max diff: 7.463038)
+Max Prediction Error (quantized 8-bit): 68.9402
+Mean Prediction Error (quantized 8-bit): 6.3301
+
+Quantization completed successfully!
+
+R2 score (quantized 8-bit model): -46.6831
+MSE (quantized 8-bit model): 62.4844
+R2 score (quantized 16-bit model): 0.5752
+MSE (quantized 16-bit model): 0.5567
 ```
 
 ### Making Predictions
