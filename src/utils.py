@@ -72,3 +72,34 @@ def dequantize_from_uint16(quantized, min_val, max_val, scale_factor):
         return np.full(quantized.shape, min_val / scale_factor)
     scaled = (quantized.astype(np.float32) / 65535.0) * value_range + min_val
     return scaled / scale_factor
+
+
+def quantize_to_uint8(values, scale_factor=None):
+    """Quantize float values to uint8 with adaptive scaling."""
+    if np.all(values == 0):
+        return np.zeros(values.shape, dtype=np.uint8), 0.0, 0.0, 1.0
+    if scale_factor is None:
+        abs_max = np.abs(values).max()
+        if abs_max > 0:
+            scale_factor = 250.0 / abs_max
+        else:
+            scale_factor = 1.0
+    scaled_values = values * scale_factor
+    min_val, max_val = scaled_values.min(), scaled_values.max()
+    if max_val == min_val:
+        quantized = np.full(values.shape, 127, dtype=np.uint8)
+        return quantized, min_val, max_val, scale_factor
+    value_range = max_val - min_val
+    normalized = ((scaled_values - min_val) / value_range * 255)
+    normalized = np.clip(normalized, 0, 255)
+    quantized = normalized.astype(np.uint8)
+    return quantized, min_val, max_val, scale_factor
+
+
+def dequantize_from_uint8(quantized, min_val, max_val, scale_factor):
+    """Dequantize uint8 values back to float using stored metadata."""
+    value_range = max_val - min_val
+    if value_range == 0:
+        return np.full(quantized.shape, min_val / scale_factor)
+    scaled = (quantized.astype(np.float32) / 255.0) * value_range + min_val
+    return scaled / scale_factor

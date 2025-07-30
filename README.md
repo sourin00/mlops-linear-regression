@@ -20,7 +20,7 @@ This project implements a complete MLOps pipeline for Linear Regression using th
 
 - **Model Training**: Linear Regression using scikit-learn
 - **Testing**: Comprehensive unit tests with pytest
-- **Quantization**: Manual 16-bit quantization (uint16) for model compression
+- **Quantization**: Manual quantization for model compression
 - **Containerization**: Docker support for deployment
 - **CI/CD**: Automated GitHub Actions workflow
 - **Monitoring**: Performance tracking and comparison
@@ -231,13 +231,17 @@ python predict.py
 
 ### Performance Comparison Table
 
-| Metric                    | Original Model | Quantized Model (uint16) | Difference     |
-|---------------------------|----------------|--------------------------|----------------|
-| **R² Score**              | 0.5758         | 0.5752                   | -0.0006        |
-| **MSE**                   | 0.5559         | 0.5567                   | +0.0008        |
-| **Max Prediction Error**  | 9.8753         | 9.8738                   | -0.0015        |
-| **Mean Prediction Error** | 0.5332         | 0.5305                   | -0.0027        |
-| **Model Size**            | 0.65 KB        | 0.55 KB                  | -0.10 KB       |
+| Metric                    | Original Model | Quantized Model (16-bit) | Quantized Model (8-bit) | 16-bit vs Original | 8-bit vs Original |
+|---------------------------|----------------|--------------------------|------------------------|--------------------|-------------------|
+| **R² Score**              | 0.5758         | 0.5752                   | -46.6831               | -0.0006            | -47.2589          |
+| **MSE**                   | 0.5559         | 0.5567                   | 62.4844                | +0.0008            | +61.9285          |
+| **Max Prediction Error**  | 9.8753         | 9.8738                   | 68.9402                | -0.0015            | +59.0649          |
+| **Mean Prediction Error** | 0.5332         | 0.5305                   | 6.3301                 | -0.0027            | +5.7969           |
+| **Model Size**            | 0.65 KB        | 0.55 KB                  | 0.53 KB                | -0.10 KB           | -0.12 KB          |
+
+
+#### Why use 16-bit quantization instead of 8-bit?
+While 8-bit quantization offers greater model size reduction, it can lead to a more significant drop in model accuracy (R², MSE, and prediction error) compared to 16-bit quantization. 16-bit quantization provides a better balance between compression and prediction quality, making it preferable for scenarios where accuracy is important but some size reduction is still desired.
 
 ## Docker Usage
 
@@ -353,7 +357,7 @@ tests/test_train.py::TestTraining::test_model_save_load PASSED
 
 ## Quantization Details
 
-### Manual 16-bit Quantization Process
+### Manual Quantization Process
 
 Our custom quantization implementation:
 
