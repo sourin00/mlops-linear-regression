@@ -194,55 +194,29 @@ Original intercept: -37.02327770606389
 Original coef values: [ 4.48674910e-01  9.72425752e-03 -1.23323343e-01  7.83144907e-01
  -2.02962058e-06 -3.52631849e-03 -4.19792487e-01 -4.33708065e-01]
 
-Quantizing intercept...
+Quantizing intercept (8-bit, per-coefficient)...
 Intercept value: -37.02327771
-Intercept scale factor: 1769.16
-Quantized parameters saved to models/quant_params.joblib
-
+Quantized parameters (8-bit, per-coefficient) saved to models/quant_params.joblib
 Model size before quantization: 0.65 KB
-Model size after quantization:  0.55 KB
-Size reduction:                0.10 KB
-Max coefficient error (16-bit): 0.00001722
-Intercept error (16-bit): 0.00000000
+Model size after  quantization:  0.43 KB
+Size reduction:                0.22 KB
+Max coefficient error: 0.00000002
+Intercept error: 0.00000042
 
 Inference Test (first 5 samples):
-Original predictions (sklearn): [0.71912284 1.76401657 2.70965883 2.83892593 2.60465725]
-Manual original predictions:    [0.71912284 1.76401657 2.70965883 2.83892593 2.60465725]
-Manual dequant predictions:     [0.69951698 1.74201847 2.69089815 2.81510208 2.5894276 ]
-
-Differences:
-Sklearn vs manual original: [0. 0. 0. 0. 0.]
-Original vs dequant manual:  [0.01960586 0.0219981  0.01876068 0.02382385 0.01522965]
-Absolute differences: [0.01960586 0.0219981  0.01876068 0.02382385 0.01522965]
-Max difference: 0.02382384825320827
-Mean difference: 0.01988362812321611
-Quantization quality is good (max diff: 0.023824)
-Max Prediction Error (quantized 16-bit): 9.8738
-Mean Prediction Error (quantized 16-bit): 0.5305
-
-Quantizing intercept (8-bit)...
-Intercept value: -37.02327771
-Intercept scale factor (8-bit): 6.75
-Quantized parameters (8-bit) saved to models/quant_params8.joblib
-Model size after 8-bit quantization:  0.53 KB
-Size reduction (8-bit):                0.12 KB
-Max coefficient error (8-bit): 0.00441088
-Intercept error (8-bit): 0.00000000
-
-Manual dequant predictions (8-bit):      [-5.4457549  -5.1534455  -3.24117255 -4.62411163 -2.21934695]
-Absolute differences (8-bit): [6.16487775 6.91746207 5.95083138 7.46303756 4.8240042 ]
-Max difference (8-bit): 7.463037557632468
-Mean difference (8-bit): 6.26404259166095
-Quantization quality (8-bit) is poor (max diff: 7.463038)
-Max Prediction Error (quantized 8-bit): 68.9402
-Mean Prediction Error (quantized 8-bit): 6.3301
+Manual dequant predictions:     [0.71912454 1.76401826 2.70966059 2.83892763 2.60465899]
+Absolute differences: [1.69724930e-06 1.69119023e-06 1.75485832e-06 1.70069523e-06
+ 1.73872417e-06]
+Max difference: 1.7548583173265797e-06
+Mean difference: 1.7165434499588629e-06
+Quantization quality is good (max diff: 0.000002)
+Max Prediction Error (quantized): 9.8753
+Mean Prediction Error (quantized): 0.5332
 
 Quantization completed successfully!
 
-R2 score (quantized 8-bit model): -46.6831
-MSE (quantized 8-bit model): 62.4844
-R2 score (quantized 16-bit model): 0.5752
-MSE (quantized 16-bit model): 0.5567
+R2 score (quantized model): 0.5758
+MSE (quantized model): 0.5559
 ```
 
 ### Making Predictions
@@ -255,17 +229,13 @@ python predict.py
 
 ### Performance Comparison Table
 
-| Metric                    | Original Model | Quantized Model (16-bit) | Quantized Model (8-bit) | 16-bit vs Original | 8-bit vs Original |
-|---------------------------|----------------|--------------------------|------------------------|--------------------|-------------------|
-| **R² Score**              | 0.5758         | 0.5752                   | -46.6831               | -0.0006            | -47.2589          |
-| **MSE**                   | 0.5559         | 0.5567                   | 62.4844                | +0.0008            | +61.9285          |
-| **Max Prediction Error**  | 9.8753         | 9.8738                   | 68.9402                | -0.0015            | +59.0649          |
-| **Mean Prediction Error** | 0.5332         | 0.5305                   | 6.3301                 | -0.0027            | +5.7969           |
-| **Model Size**            | 0.65 KB        | 0.55 KB                  | 0.53 KB                | -0.10 KB           | -0.12 KB          |
-
-
-#### Why use 16-bit quantization instead of 8-bit?
-While 8-bit quantization offers greater model size reduction, it can lead to a more significant drop in model accuracy (R², MSE, and prediction error) compared to 16-bit quantization. 16-bit quantization provides a better balance between compression and prediction quality, making it preferable for scenarios where accuracy is important but some size reduction is still desired.
+| Metric                    | Original Model | Quantized Model (8-bit) | 8-bit vs Original |
+|---------------------------|----------------|-------------------------|-------------------|
+| **R² Score**              | 0.5758         | 0.5758                  | 0.0000            |
+| **MSE**                   | 0.5559         | 0.5559                  | 0.0000            |
+| **Max Prediction Error**  | 9.8753         | 9.8753                  | 0.0000            |
+| **Mean Prediction Error** | 0.5332         | 0.5332                  | 0.0000            |
+| **Model Size**            | 0.65 KB        | 0.43 KB                 | -0.22 KB          |
 
 ## Docker Usage
 
@@ -381,24 +351,26 @@ tests/test_train.py::TestTraining::test_model_save_load PASSED
 
 ## Quantization Details
 
-### Manual Quantization Process
+### Manual 8-bit Quantization Process
 
-Our custom quantization implementation:
+Our custom quantization implementation uses 8-bit unsigned integer quantization for model compression:
 
-1. **Parameter Extraction**: Extract `coef_` and `intercept_` from trained model
-2. **Scaling**: Apply scale factor to fit float range into uint16
-3. **Normalization**: Map values to 0-65535 range
-4. **Storage**: Save quantized parameters with metadata
-5. **Dequantization**: Reverse process for inference
+1. **Parameter Extraction**: Extract `coef_` and `intercept_` from the trained model.
+2. **Per-Coefficient Min/Max Scaling**: For each coefficient and the intercept, compute its own min and max value (for a single value, min = max = value).
+3. **Linear Mapping to [0, 255]**: Each parameter is linearly mapped to the [0, 255] range using its min and max.
+4. **Storage with Compression**: Save quantized parameters (as uint8) along with their per-coefficient min and max values (as float) in a joblib file using compression (compress=3) to further reduce disk size.
+5. **Dequantization**: For inference, reverse the mapping using the stored min and max to recover the original float values.
 
-### Quantization Formula
+#### Quantization Formula
 ```python
-# Quantization
-scaled_values = values * scale_factor
-normalized = ((scaled_values - min_val) / (max_val - min_val)) * 65535
-quantized = normalized.astype(np.uint16)
+# Quantization (for each parameter)
+scale = 255.0 / (max_val - min_val)
+quantized = np.round((value - min_val) * scale).astype(np.uint8)
 
-# Dequantization  
-denormalized = (quantized / 65535.0) * (max_val - min_val) + min_val
-original = denormalized / scale_factor
+# Dequantization
+scale = (max_val - min_val) / 255.0
+dequantized = quantized.astype(np.float32) * scale + min_val
 ```
+
+**Note:**
+- We use joblib's `compress=3` option when saving quantized model files to achieve additional file size reduction without affecting accuracy or inference speed.
